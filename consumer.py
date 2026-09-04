@@ -2,16 +2,7 @@ import json
 import psycopg2
 from kafka import KafkaConsumer
 
-KAFKA_TOPIC = "weather-raw"
-KAFKA_BROKER = "localhost:9092"
-
-DB_CONFIG = {
-    "host": "127.0.0.1",
-    "port": 5434,
-    "dbname": "weather_db",
-    "user": "weather_user",
-    "password": "weather_pass",
-}
+from common import KAFKA_BROKER, KAFKA_TOPIC_RAW, DB_CONFIG
 
 
 def get_db_connection():
@@ -42,7 +33,7 @@ def insert_record(conn, record):
 
 def main():
     consumer = KafkaConsumer(
-        KAFKA_TOPIC,
+        KAFKA_TOPIC_RAW,
         bootstrap_servers=KAFKA_BROKER,
         value_deserializer=lambda v: json.loads(v.decode("utf-8")),
         auto_offset_reset="earliest",
@@ -51,13 +42,13 @@ def main():
     )
 
     conn = get_db_connection()
-    print(f"Consumer started. Listening on topic '{KAFKA_TOPIC}'...")
+    print(f"Consumer started. Listening on topic '{KAFKA_TOPIC_RAW}'...")
 
     for message in consumer:
         record = message.value
         try:
             insert_record(conn, record)
-            print(f"Inserted: {record}")
+            print(f"Inserted: {record['city']} @ {record['timestamp']}")
         except Exception as e:
             print(f"Error inserting record: {e}")
             conn.rollback()
