@@ -3,7 +3,7 @@ services:
     image: apache/airflow:3.0.0
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://weather_user:weather_pass@host.docker.internal:5434/weather_db
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://weather_user:dev_local_password_not_real@host.docker.internal:5434/weather_db
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
     volumes:
