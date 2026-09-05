@@ -10,7 +10,7 @@ DB_CONFIG = {
     "port": 5434,
     "dbname": "weather_db",
     "user": "weather_user",
-    "password": "weather_pass",
+    "password": "dev_local_password_not_real",
 }
 
 # --- Cities tracked ---
