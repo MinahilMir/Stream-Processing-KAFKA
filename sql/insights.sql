@@ -47,3 +47,42 @@ SELECT
 FROM staging.weather_raw
 GROUP BY city
 ORDER BY overall_avg_temperature DESC;
+
+-- View 5: Latest known status per tracked flight (for Flight Risk Advisor's status board)
+CREATE OR REPLACE VIEW staging.v_latest_flight_status AS
+SELECT DISTINCT ON (flight_number, origin_iata, destination_iata, COALESCE(scheduled_departure, scheduled_arrival))
+    flight_number,
+    airline,
+    origin_iata,
+    destination_iata,
+    scheduled_departure,
+    scheduled_arrival,
+    status,
+    fetched_at
+FROM staging.flight_raw
+ORDER BY flight_number, origin_iata, destination_iata, COALESCE(scheduled_departure, scheduled_arrival), fetched_at DESC;
+
+-- View 6: Route-level summary (for a route risk/reliability chart)
+CREATE OR REPLACE VIEW staging.v_flight_route_summary AS
+SELECT
+    origin_iata,
+    destination_iata,
+    COUNT(*) AS total_flights,
+    COUNT(*) FILTER (WHERE status = 'Canceled') AS cancelled_flights,
+    ROUND(
+        100.0 * COUNT(*) FILTER (WHERE status = 'Canceled') / NULLIF(COUNT(*), 0), 2
+    ) AS cancellation_rate_pct
+FROM staging.flight_raw
+GROUP BY origin_iata, destination_iata
+ORDER BY origin_iata, destination_iata;
+
+-- View 7: AeroDataBox API usage against the free-tier cap (for a pipeline-health card)
+CREATE OR REPLACE VIEW staging.v_api_usage_summary AS
+SELECT
+    provider,
+    endpoint,
+    usage_date,
+    request_count,
+    unit_count
+FROM staging.api_usage_tracker
+ORDER BY usage_date DESC;
